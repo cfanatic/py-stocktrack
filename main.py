@@ -42,7 +42,6 @@ class Stock():
         self._data = stock_data
 
     def _fetchImage(self):
-        stock_image = []
         stock_intraday = self._html.find("img", {"id": "intraday"}).attrs
         stock_week = self._html.find("img", {"id": "woche"}).attrs
         stock_month = self._html.find("img", {"id": "monat"}).attrs
@@ -62,7 +61,7 @@ class Stock():
 
     def getImage(self, key = "all"):
         if (key == "all"):
-            for key, value in self._image.items():
+            for key, _value in self._image.items():
                 self.getImage(key)
         else:
             image_name = self._image[key]["alt"].split(" - ")[-1].replace(" ", "_").lower() + ".png"
