@@ -38,8 +38,11 @@ class Stock():
 
 def main():
     amazon = Stock("US0231351067")
-    data = amazon.getData()
-    pprint(data)
+    microsoft = Stock("US5949181045")
+    apple = Stock("US0378331005")
+    pprint(amazon.getData())
+    pprint(microsoft.getData())
+    pprint(apple.getData())
 
 
 if __name__ == "__main__":
