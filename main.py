@@ -6,6 +6,7 @@ Trigger notifications to the user in case of high market volatility.
 from bs4 import BeautifulSoup as html
 from pprint import pprint
 import os
+import pandas
 import requests
 import urllib
 
@@ -30,12 +31,12 @@ class Stock():
         stock_data.update({"name": stock_name})
         tag_parent = self._html.find_all("td", class_="longprice")
         for item in tag_parent:
-            if 'id' in item.attrs:
+            if "id" in item.attrs:
                 key = item.attrs.get("id")
                 value = item.text.replace(" ", "").replace(",", ".").replace("\xa0", "").replace("TEUR", " TEUR")
                 stock_data.update({key: value})
             else:
-                tag_child = item.find('strong')
+                tag_child = item.find("strong")
                 key = tag_child.attrs.get("id")
                 value = item.text.replace(" ", "").replace(",", ".").replace("\xa0", "").replace("TEUR", " TEUR")
                 stock_data.update({key: value})
@@ -48,10 +49,10 @@ class Stock():
         stock_month6 = self._html.find("img", {"id": "monat6"}).attrs
         stock_year = self._html.find("img", {"id": "jahr"}).attrs
         self._image = {"intraday": stock_intraday,
-                        "week": stock_week,
-                        "month": stock_month,
-                        "month6": stock_month6,
-                        "year": stock_year}
+            "week": stock_week,
+            "month": stock_month,
+            "month6": stock_month6,
+            "year": stock_year}
 
     def getData(self, key = "all"):
         if (key == "all"):
@@ -71,6 +72,25 @@ class Stock():
                 os.makedirs(image_path)
             urllib.request.urlretrieve(image_url, image_path + image_name)
 
+    def saveData(self):
+        data_name = "performance.xlsx"
+        data_sheet = self.getData("name").split()[0]
+        data_path = os.getcwd() + "/misc/"
+        data = [pandas.to_datetime("today").strftime("%Y-%m-%d  %H:%M"),
+            float(self._data["last"]),
+            float(self._data["low"]),
+            float(self._data["high"]),
+            self._data["delta"],
+            float(self._data["preis"])]
+        df = pandas.DataFrame(data).T
+        df.columns = ["Date", "Last", "Low", "High", "Change", "Mean"]
+        writer = pandas.ExcelWriter(data_path + data_name, engine="xlsxwriter")
+        df.to_excel(writer, sheet_name=data_sheet, startrow=0, index=False, header=True)
+        workbook = writer.book
+        worksheet = writer.sheets[data_sheet]
+        worksheet.set_column("A:P", 15, 0)
+        writer.save()
+
 
 def main():
     # Open connection to stock exchange database
@@ -85,6 +105,10 @@ def main():
     amazon.getImage()
     microsoft.getImage()
     apple.getImage()
+    # Save stock performance data
+    amazon.saveData()
+    microsoft.saveData()
+    apple.saveData()
 
 
 if __name__ == "__main__":
