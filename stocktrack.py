@@ -19,19 +19,21 @@ class Stock():
         self._data = html(self._html.content, "html.parser")
 
     def getData(self):
-        data = {}
+        stock_data = {}
+        stock_name = self._data.find("div", {"id": "col1_content"}).find("h2").text
+        stock_data.update({"name": stock_name})
         tag_parent = self._data.find_all("td", class_="longprice")
         for item in tag_parent:
             if 'id' in item.attrs:
                 key = item.attrs.get("id")
                 value = item.text.replace(" ", "").replace(",", ".").replace("\xa0", "").replace("TEUR", " TEUR")
-                data.update({key: value})
+                stock_data.update({key: value})
             else:
                 tag_child = item.find('strong')
                 key = tag_child.attrs.get("id")
                 value = item.text.replace(" ", "").replace(",", ".").replace("\xa0", "").replace("TEUR", " TEUR")
-                data.update({key: value})
-        return data
+                stock_data.update({key: value})
+        return stock_data
 
 
 def main():
