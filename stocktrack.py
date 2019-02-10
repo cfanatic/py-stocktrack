@@ -16,17 +16,21 @@ class Stock():
         self._id = id
         self._query = Stock.URL + id
         self._html = requests.get(self._query)
-        self._data = html(self._html.content, 'html.parser')
+        self._data = html(self._html.content, "html.parser")
 
     def getData(self):
         data = {}
-        tag_parent = self._data.find_all('td', class_='longprice')
+        tag_parent = self._data.find_all("td", class_="longprice")
         for item in tag_parent:
             if 'id' in item.attrs:
-                data.update({item.attrs.get('id'): item.text})
+                key = item.attrs.get("id")
+                value = item.text.replace(" ", "").replace(",", ".").replace("\xa0", "").replace("TEUR", " TEUR")
+                data.update({key: value})
             else:
                 tag_child = item.find('strong')
-                data.update({tag_child.attrs.get('id'): item.text})
+                key = tag_child.attrs.get("id")
+                value = item.text.replace(" ", "").replace(",", ".").replace("\xa0", "").replace("TEUR", " TEUR")
+                data.update({key: value})
         return data
 
 
