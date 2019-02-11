@@ -5,6 +5,7 @@ Trigger notifications to the user in case of high market volatility.
 
 from bs4 import BeautifulSoup as html
 from pprint import pprint
+import openpyxl
 import os
 import pandas
 import requests
@@ -76,6 +77,7 @@ class Stock():
         data_name = "performance.xlsx"
         data_sheet = self.getData("name").split()[0]
         data_path = os.getcwd() + "/misc/"
+        data_file = data_path + data_name
         data = [pandas.to_datetime("today").strftime("%Y-%m-%d  %H:%M"),
             float(self._data["last"]),
             float(self._data["low"]),
@@ -84,12 +86,22 @@ class Stock():
             float(self._data["preis"])]
         df = pandas.DataFrame(data).T
         df.columns = ["Date", "Last", "Low", "High", "Change", "Mean"]
-        writer = pandas.ExcelWriter(data_path + data_name, engine="xlsxwriter")
+        writer = pandas.ExcelWriter(data_file, engine="openpyxl")
+        if os.path.exists(data_file):
+            reader = pandas.ExcelFile(data_file)
+            if data_sheet in reader.sheet_names:
+                df = reader.parse(data_sheet)
+                df.loc[-1] = data
+            reader.close()
+            workbook = openpyxl.load_workbook(data_file)
+            writer.book = workbook
+            writer.sheets = dict((ws.title, ws) for ws in workbook.worksheets)
+        else:
+            workbook = openpyxl.Workbook()
         df.to_excel(writer, sheet_name=data_sheet, startrow=0, index=False, header=True)
-        workbook = writer.book
-        worksheet = writer.sheets[data_sheet]
-        worksheet.set_column("A:P", 15, 0)
-        writer.save()
+        for worksheet in workbook:
+            worksheet.column_dimensions["A"].width = 17
+        writer.close()
 
 
 def main():
@@ -97,18 +109,22 @@ def main():
     amazon = Stock("US0231351067")
     microsoft = Stock("US5949181045")
     apple = Stock("US0378331005")
+    google = Stock("US02079K3059")
     # Retrieve stock performance data
     pprint(amazon.getData())
     pprint(microsoft.getData())
     pprint(apple.getData())
+    pprint(google.getData())
     # Download stock performance images
     amazon.getImage()
     microsoft.getImage()
     apple.getImage()
+    google.getImage()
     # Save stock performance data
     amazon.saveData()
     microsoft.saveData()
     apple.saveData()
+    google.saveData()
 
 
 if __name__ == "__main__":
