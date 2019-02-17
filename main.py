@@ -99,8 +99,8 @@ class Stock():
         else:
             workbook = openpyxl.Workbook()
         df.to_excel(writer, sheet_name=data_sheet, startrow=0, index=False, header=True)
-        for worksheet in workbook:
-            worksheet.column_dimensions["A"].width = 17
+        worksheet = writer.book[data_sheet]
+        worksheet.column_dimensions["A"].width = 17
         writer.close()
 
 
