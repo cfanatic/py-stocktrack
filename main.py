@@ -14,8 +14,9 @@ import urllib
 
 class Stock():
 
-    URL_DOMAIN = "https://www.tradegate.de"
-    URL_QUERY = URL_DOMAIN + "/orderbuch.php?isin="
+    URL_DATA = "https://www.tradegate.de"
+    URL_QUERY = URL_DATA + "/orderbuch.php?isin="
+    FILE_DATA = "performance.xlsx"
 
     def __init__(self, id):
         self._id = id
@@ -67,17 +68,17 @@ class Stock():
                 self.getImage(key)
         else:
             image_name = self._image[key]["alt"].split(" - ")[-1].replace(" ", "_").lower() + ".png"
-            image_url = Stock.URL_DOMAIN + self._image[key]["src"]
+            image_url = Stock.URL_DATA + self._image[key]["src"]
             image_path = os.getcwd() + "/misc/" + self.getData("name").split()[0].lower() + "/"
             if not os.path.exists(image_path):
                 os.makedirs(image_path)
             urllib.request.urlretrieve(image_url, image_path + image_name)
 
     def saveData(self):
-        data_name = "performance.xlsx"
+        data_file = Stock.FILE_DATA
         data_sheet = self.getData("name").split()[0]
         data_path = os.getcwd() + "/misc/"
-        data_file = data_path + data_name
+        data_file = data_path + data_file
         data = [pandas.to_datetime("today").strftime("%Y-%m-%d  %H:%M"),
             float(self._data["last"]),
             float(self._data["low"]),
@@ -103,6 +104,45 @@ class Stock():
         worksheet.column_dimensions["A"].width = 17
         writer.close()
 
+    def saveImage(self):
+        data_file = Stock.FILE_DATA
+        data_sheet = "Performance"
+        data_path = os.getcwd() + "/misc/"
+        data_file = data_path + data_file
+        data_name = self.getData("name").split()[0]
+        alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+        writer = pandas.ExcelWriter(data_file, engine="openpyxl")
+        if os.path.exists(data_file):
+            reader = pandas.ExcelFile(data_file)
+            if data_sheet in reader.sheet_names:
+                df = reader.parse(data_sheet, header=None)
+                index_row = df.loc[0, 52]
+            else:
+                index_row = 0
+            reader.close()
+            workbook = openpyxl.load_workbook(data_file)
+            writer.book = workbook
+            writer.sheets = dict((ws.title, ws) for ws in workbook.worksheets)
+        else:
+            workbook = openpyxl.Workbook()
+        df = pandas.DataFrame({"name": [data_name]})
+        df.to_excel(writer, sheet_name=data_sheet, startrow=index_row, startcol=0, index=False, header=False)
+        df = pandas.DataFrame({"index": [index_row + 13]})
+        df.to_excel(writer, sheet_name=data_sheet, startrow=0, startcol=52, index=False, header=False)
+        index_column = 0
+        for image_file in os.listdir(data_path + data_name):
+            if image_file.endswith(".png"):
+                img = openpyxl.drawing.image.Image(os.path.join(data_path + data_name, image_file))
+                img.anchor = alphabet[index_column] + str(index_row + 2)
+                index_column = index_column + 6
+                workbook[data_sheet].add_image(img)
+                workbook.save(data_file)
+            else:
+                continue
+        # workbook.remove(workbook[data_sheet])
+        # workbook.save(data_file)
+        writer.close()
+
 
 def main():
     # Open connection to stock exchange database
@@ -125,7 +165,11 @@ def main():
     microsoft.saveData()
     apple.saveData()
     google.saveData()
-
+    # Save stock performance images
+    amazon.saveImage()
+    microsoft.saveImage()
+    # apple.saveImage()
+    # google.saveImage()
 
 if __name__ == "__main__":
     main()
