@@ -10,6 +10,7 @@ import os
 import pandas
 import requests
 import urllib
+import xlrd
 
 
 class Stock():
@@ -85,24 +86,31 @@ class Stock():
             float(self._data["high"]),
             self._data["delta"],
             float(self._data["preis"])]
-        df = pandas.DataFrame(data).T
-        df.columns = ["Date", "Last", "Low", "High", "Change", "Mean"]
-        writer = pandas.ExcelWriter(data_file, engine="openpyxl")
-        if os.path.exists(data_file):
-            reader = pandas.ExcelFile(data_file)
-            if data_sheet in reader.sheet_names:
-                df = reader.parse(data_sheet)
-                df.loc[-1] = data
-            reader.close()
-            workbook = openpyxl.load_workbook(data_file)
-            writer.book = workbook
-            writer.sheets = dict((ws.title, ws) for ws in workbook.worksheets)
-        else:
-            workbook = openpyxl.Workbook()
-        df.to_excel(writer, sheet_name=data_sheet, startrow=0, index=False, header=True)
-        worksheet = writer.book[data_sheet]
-        worksheet.column_dimensions["A"].width = 17
-        writer.close()
+        try:
+            writer = pandas.ExcelWriter(data_file, engine="openpyxl")
+            df = pandas.DataFrame(data).T
+            df.columns = ["Date", "Last", "Low", "High", "Change", "Mean"]
+            if os.path.exists(data_file):
+                reader = pandas.ExcelFile(data_file)
+                if data_sheet in reader.sheet_names:
+                    df = reader.parse(data_sheet)
+                    df.loc[-1] = data
+                reader.close()
+                workbook = openpyxl.load_workbook(data_file)
+                writer.book = workbook
+                writer.sheets = dict((ws.title, ws) for ws in workbook.worksheets)
+            else:
+                workbook = openpyxl.Workbook()
+            df.to_excel(writer, sheet_name=data_sheet, startrow=0, index=False, header=True)
+            worksheet = writer.book[data_sheet]
+            worksheet.column_dimensions["A"].width = 17
+            writer.close()
+        except ValueError:
+            print("Error@saveData: Could not write data!")
+        except xlrd.biffh.XLRDError:
+            print("Error@saveData: Invalid sheet data format!")
+        finally:
+            pass
 
     def saveImage(self):
         data_file = Stock.FILE_DATA
@@ -111,37 +119,44 @@ class Stock():
         data_file = data_path + data_file
         data_name = self.getData("name").split()[0]
         alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-        writer = pandas.ExcelWriter(data_file, engine="openpyxl")
-        if os.path.exists(data_file):
-            reader = pandas.ExcelFile(data_file)
-            if data_sheet in reader.sheet_names:
-                df = reader.parse(data_sheet, header=None)
-                index_row = df.loc[0, 52]
+        try:
+            writer = pandas.ExcelWriter(data_file, engine="openpyxl")
+            if os.path.exists(data_file):
+                reader = pandas.ExcelFile(data_file)
+                if data_sheet in reader.sheet_names:
+                    df = reader.parse(data_sheet, header=None)
+                    index_row = df.loc[0, 52]
+                else:
+                    index_row = 0
+                reader.close()
+                workbook = openpyxl.load_workbook(data_file)
+                writer.book = workbook
+                writer.sheets = dict((ws.title, ws) for ws in workbook.worksheets)
             else:
-                index_row = 0
-            reader.close()
-            workbook = openpyxl.load_workbook(data_file)
-            writer.book = workbook
-            writer.sheets = dict((ws.title, ws) for ws in workbook.worksheets)
-        else:
-            workbook = openpyxl.Workbook()
-        df = pandas.DataFrame({"name": [data_name]})
-        df.to_excel(writer, sheet_name=data_sheet, startrow=index_row, startcol=0, index=False, header=False)
-        df = pandas.DataFrame({"index": [index_row + 13]})
-        df.to_excel(writer, sheet_name=data_sheet, startrow=0, startcol=52, index=False, header=False)
-        index_column = 0
-        for image_file in os.listdir(data_path + data_name):
-            if image_file.endswith(".png"):
-                img = openpyxl.drawing.image.Image(os.path.join(data_path + data_name, image_file))
-                img.anchor = alphabet[index_column] + str(index_row + 2)
-                index_column = index_column + 6
-                workbook[data_sheet].add_image(img)
-                workbook.save(data_file)
-            else:
-                continue
-        # workbook.remove(workbook[data_sheet])
-        # workbook.save(data_file)
-        writer.close()
+                workbook = openpyxl.Workbook()
+            df = pandas.DataFrame({"name": [data_name]})
+            df.to_excel(writer, sheet_name=data_sheet, startrow=index_row, startcol=0, index=False, header=False)
+            df = pandas.DataFrame({"index": [index_row + 13]})
+            df.to_excel(writer, sheet_name=data_sheet, startrow=0, startcol=52, index=False, header=False)
+            index_column = 0
+            for image_file in os.listdir(data_path + data_name):
+                if image_file.endswith(".png"):
+                    img = openpyxl.drawing.image.Image(os.path.join(data_path + data_name, image_file))
+                    img.anchor = alphabet[index_column] + str(index_row + 2)
+                    index_column = index_column + 6
+                    workbook[data_sheet].add_image(img)
+                    workbook.save(data_file)
+                else:
+                    continue
+            # workbook.remove(workbook[data_sheet])
+            # workbook.save(data_file)
+            writer.close()
+        except ValueError:
+            print("Error@saveImage: Could not write data!")
+        except xlrd.biffh.XLRDError:
+            print("Error@saveImage: Invalid sheet data format!")
+        finally:
+            pass
 
 
 def main():
