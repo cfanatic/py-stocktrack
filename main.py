@@ -9,6 +9,7 @@ import openpyxl
 import os
 import pandas
 import requests
+import shutil
 import urllib
 import xlrd
 
@@ -80,6 +81,7 @@ class Stock():
         data_sheet = self.getData("name").split()[0]
         data_path = os.getcwd() + "/misc/"
         data_file = data_path + data_file
+        data_backup = data_file + ".backup"
         data = [pandas.to_datetime("today").strftime("%Y-%m-%d  %H:%M"),
             float(self._data["last"]),
             float(self._data["low"]),
@@ -91,6 +93,7 @@ class Stock():
             df = pandas.DataFrame(data).T
             df.columns = ["Date", "Last", "Low", "High", "Change", "Mean"]
             if os.path.exists(data_file):
+                shutil.copyfile(data_file, data_backup)
                 reader = pandas.ExcelFile(data_file)
                 if data_sheet in reader.sheet_names:
                     df = reader.parse(data_sheet)
@@ -106,22 +109,25 @@ class Stock():
             worksheet.column_dimensions["A"].width = 17
             writer.close()
         except ValueError:
-            print("Error@saveData: Could not write data!")
+            print("Error@saveData: Could not write data to sheet!")
         except xlrd.biffh.XLRDError:
             print("Error@saveData: Invalid sheet data format!")
-        finally:
-            pass
+        else:
+            if os.path.exists(data_backup):
+                os.remove(data_backup)
 
     def saveImage(self):
         data_file = Stock.FILE_DATA
         data_sheet = "Performance"
         data_path = os.getcwd() + "/misc/"
         data_file = data_path + data_file
+        data_backup = data_file + ".backup"
         data_name = self.getData("name").split()[0]
         alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
         try:
             writer = pandas.ExcelWriter(data_file, engine="openpyxl")
             if os.path.exists(data_file):
+                shutil.copyfile(data_file, data_backup)
                 reader = pandas.ExcelFile(data_file)
                 if data_sheet in reader.sheet_names:
                     df = reader.parse(data_sheet, header=None)
@@ -152,11 +158,14 @@ class Stock():
             # workbook.save(data_file)
             writer.close()
         except ValueError:
-            print("Error@saveImage: Could not write data!")
+            print("Error@saveImage: Could not write image to sheet!")
+            shutil.move(data_backup, data_file)
         except xlrd.biffh.XLRDError:
             print("Error@saveImage: Invalid sheet data format!")
-        finally:
-            pass
+            shutil.move(data_backup, data_file)
+        else:
+            if os.path.exists(data_backup):
+                os.remove(data_backup)
 
 
 def main():
