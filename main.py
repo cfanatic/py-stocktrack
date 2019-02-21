@@ -79,8 +79,8 @@ class Stock():
     def saveData(self):
         data_file = Stock.FILE_DATA
         data_sheet = self.getData("name").split()[0]
-        data_path = os.getcwd() + "/misc/"
-        data_file = data_path + data_file
+        data_path = os.path.join(os.getcwd(), "misc")
+        data_file = os.path.join(data_path, data_file)
         data_backup = data_file + ".backup"
         data = [pandas.to_datetime("today").strftime("%Y-%m-%d  %H:%M"),
             float(self._data["last"]),
@@ -119,8 +119,8 @@ class Stock():
     def saveImage(self):
         data_file = Stock.FILE_DATA
         data_sheet = "Performance"
-        data_path = os.getcwd() + "/misc/"
-        data_file = data_path + data_file
+        data_path = os.path.join(os.getcwd(), "misc")
+        data_file = os.path.join(data_path, data_file)
         data_backup = data_file + ".backup"
         data_name = self.getData("name").split()[0]
         alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
@@ -145,17 +145,15 @@ class Stock():
             df = pandas.DataFrame({"index": [index_row + 13]})
             df.to_excel(writer, sheet_name=data_sheet, startrow=0, startcol=52, index=False, header=False)
             index_column = 0
-            for image_file in os.listdir(data_path + data_name):
+            for image_file in os.listdir(os.path.join(data_path, data_name)):
                 if image_file.endswith(".png"):
-                    img = openpyxl.drawing.image.Image(os.path.join(data_path + data_name, image_file))
+                    img = openpyxl.drawing.image.Image(os.path.join(data_path, data_name, image_file))
                     img.anchor = alphabet[index_column] + str(index_row + 2)
                     index_column = index_column + 6
                     workbook[data_sheet].add_image(img)
                     workbook.save(data_file)
                 else:
                     continue
-            # workbook.remove(workbook[data_sheet])
-            # workbook.save(data_file)
             writer.close()
         except ValueError:
             print("Error@saveImage: Could not write image to sheet!")
@@ -166,6 +164,19 @@ class Stock():
         else:
             if os.path.exists(data_backup):
                 os.remove(data_backup)
+
+    @staticmethod
+    def deleteImages():
+        try:
+            data_file = Stock.FILE_DATA
+            data_sheet = "Performance"
+            data_path = os.path.join(os.getcwd(), "misc")
+            data_file = os.path.join(data_path, data_file)
+            workbook = openpyxl.load_workbook(data_file)
+            workbook.remove(workbook[data_sheet])
+            workbook.save(data_file)
+        except KeyError:
+            print("Error@deleteImages: Sheet tab does not exist!")
 
 
 def main():
@@ -192,8 +203,8 @@ def main():
     # Save stock performance images
     amazon.saveImage()
     microsoft.saveImage()
-    # apple.saveImage()
-    # google.saveImage()
+    # Delete stock performance images
+    # Stock.deleteImages()
 
 if __name__ == "__main__":
     main()
