@@ -116,45 +116,39 @@ class Stock():
             if os.path.exists(data_backup):
                 os.remove(data_backup)
 
-    def saveImage(self):
+    @staticmethod
+    def saveImages():
         data_file = Stock.FILE_DATA
         data_sheet = "Performance"
         data_path = os.path.join(os.getcwd(), "misc")
         data_file = os.path.join(data_path, data_file)
         data_backup = data_file + ".backup"
-        data_name = self.getData("name").split()[0]
-        alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+        data_names = next(os.walk(data_path))[1]
+        data_row = 0
         try:
             writer = pandas.ExcelWriter(data_file, engine="openpyxl")
-            if os.path.exists(data_file):
-                shutil.copyfile(data_file, data_backup)
-                reader = pandas.ExcelFile(data_file)
-                if data_sheet in reader.sheet_names:
-                    df = reader.parse(data_sheet, header=None)
-                    index_row = df.loc[0, 52]
-                else:
-                    index_row = 0
-                reader.close()
-                workbook = openpyxl.load_workbook(data_file)
-                writer.book = workbook
-                writer.sheets = dict((ws.title, ws) for ws in workbook.worksheets)
-            else:
-                workbook = openpyxl.Workbook()
-            df = pandas.DataFrame({"name": [data_name]})
-            df.to_excel(writer, sheet_name=data_sheet, startrow=index_row, startcol=0, index=False, header=False)
-            df = pandas.DataFrame({"index": [index_row + 13]})
-            df.to_excel(writer, sheet_name=data_sheet, startrow=0, startcol=52, index=False, header=False)
-            index_column = 0
-            for image_file in os.listdir(os.path.join(data_path, data_name)):
-                if image_file.endswith(".png"):
-                    img = openpyxl.drawing.image.Image(os.path.join(data_path, data_name, image_file))
-                    img.anchor = alphabet[index_column] + str(index_row + 2)
-                    index_column = index_column + 6
-                    workbook[data_sheet].add_image(img)
-                    workbook.save(data_file)
-                else:
-                    continue
+            shutil.copyfile(data_file, data_backup)
+            workbook = openpyxl.load_workbook(data_file)
+            writer.book = workbook
+            writer.sheets = dict((ws.title, ws) for ws in workbook.worksheets)
+            for data_name in data_names:
+                data_column = 0
+                df = pandas.DataFrame({"name": [data_name.capitalize()]})
+                df.to_excel(writer, sheet_name=data_sheet, startrow=data_row, startcol=0, index=False, header=False)
+                for image_file in os.listdir(os.path.join(data_path, data_name)):
+                    if image_file.endswith(".png"):
+                        img = openpyxl.drawing.image.Image(
+                            os.path.join(data_path, data_name, image_file))
+                        img.anchor = openpyxl.utils.get_column_letter(data_column + 1) + str(data_row + 2)
+                        data_column += 6
+                        workbook[data_sheet].add_image(img)
+                        workbook.save(data_file)
+                    else:
+                        continue
+                data_row += 13
             writer.close()
+        except FileNotFoundError:
+            print("Error@deleteImages: Sheet file does not exist!")
         except ValueError:
             print("Error@saveImage: Could not write image to sheet!")
             shutil.move(data_backup, data_file)
@@ -175,6 +169,8 @@ class Stock():
             workbook = openpyxl.load_workbook(data_file)
             workbook.remove(workbook[data_sheet])
             workbook.save(data_file)
+        except FileNotFoundError:
+            print("Error@deleteImages: Sheet file does not exist!")
         except KeyError:
             print("Error@deleteImages: Sheet tab does not exist!")
 
@@ -200,11 +196,10 @@ def main():
     microsoft.saveData()
     apple.saveData()
     google.saveData()
-    # Save stock performance images
-    amazon.saveImage()
-    microsoft.saveImage()
     # Delete stock performance images
-    # Stock.deleteImages()
+    Stock.deleteImages()
+    # Save stock performance images
+    Stock.saveImages()
 
 if __name__ == "__main__":
     main()
