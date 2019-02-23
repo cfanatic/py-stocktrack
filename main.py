@@ -71,10 +71,10 @@ class Stock():
         else:
             image_name = self._image[key]["alt"].split(" - ")[-1].replace(" ", "_").lower() + ".png"
             image_url = Stock.URL_DATA + self._image[key]["src"]
-            image_path = os.getcwd() + "/misc/" + self.getData("name").split()[0].lower() + "/"
+            image_path = os.path.join(os.getcwd(), "misc", self.getData("name").split()[0].lower())
             if not os.path.exists(image_path):
                 os.makedirs(image_path)
-            urllib.request.urlretrieve(image_url, image_path + image_name)
+            urllib.request.urlretrieve(image_url, os.path.join(image_path, image_name))
 
     def saveData(self):
         data_file = Stock.FILE_DATA
@@ -135,16 +135,12 @@ class Stock():
                 data_column = 0
                 df = pandas.DataFrame({"name": [data_name.capitalize()]})
                 df.to_excel(writer, sheet_name=data_sheet, startrow=data_row, startcol=0, index=False, header=False)
-                for image_file in os.listdir(os.path.join(data_path, data_name)):
-                    if image_file.endswith(".png"):
-                        img = openpyxl.drawing.image.Image(
-                            os.path.join(data_path, data_name, image_file))
-                        img.anchor = openpyxl.utils.get_column_letter(data_column + 1) + str(data_row + 2)
-                        data_column += 6
-                        workbook[data_sheet].add_image(img)
-                        workbook.save(data_file)
-                    else:
-                        continue
+                for image_file in ["intraday.png", "1_woche.png", "1_monat.png", "6_monate.png", "1_jahr.png"]:
+                    img = openpyxl.drawing.image.Image(os.path.join(data_path, data_name, image_file))
+                    img.anchor = openpyxl.utils.get_column_letter(data_column + 1) + str(data_row + 2)
+                    data_column += 6
+                    workbook[data_sheet].add_image(img)
+                    workbook.save(data_file)
                 data_row += 13
             writer.close()
         except FileNotFoundError:
