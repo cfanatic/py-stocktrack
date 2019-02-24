@@ -141,6 +141,8 @@ class Stock():
                     data_column += 6
                     workbook[data_sheet].add_image(img)
                     workbook.save(data_file)
+                caption = workbook["Performance"]["A" + str(data_row + 1)]
+                caption.font = openpyxl.styles.Font(bold=True)
                 data_row += 13
             writer.close()
         except FileNotFoundError:
