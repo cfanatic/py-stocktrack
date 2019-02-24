@@ -141,7 +141,10 @@ class Stock():
                     data_column += 6
                     workbook[data_sheet].add_image(img)
                     workbook.save(data_file)
-                caption = workbook["Performance"]["A" + str(data_row + 1)]
+                for caption in [(3, "Intraday"), (9, "Week"), (15, "Month"), (21, "Month-6"), (27, "Year")]:
+                    cell = openpyxl.utils.get_column_letter(caption[0]) + str(data_row + 1)
+                    workbook[data_sheet][cell] = caption[1]
+                caption = workbook[data_sheet]["A" + str(data_row + 1)]
                 caption.font = openpyxl.styles.Font(bold=True)
                 data_row += 13
             writer.close()
