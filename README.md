@@ -9,7 +9,7 @@ Following is a summary of the main features:
 - [x] Export stock data to Excel sheet
 - [x] Trigger notifications in case of market volatility
 
-Run the script multiple times in order to generate statistics for multiple stocks:
+Run the script multiple times in order to generate statistics for various stocks:
 
 ![Price](https://raw.githubusercontent.com/cfanatic/py-stocktrack/master/res/2_price.png)
 
@@ -19,7 +19,6 @@ Developed and tested on the following setup:
 
 - Python 3.7.2
 - beautifulsoup 4.7.1
-- openpyxl 2.6.0
 - pandas 0.24.1
 - openpyxl 2.6.0
 
