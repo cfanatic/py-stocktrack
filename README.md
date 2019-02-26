@@ -3,6 +3,7 @@
 This repository features a stock analysis tool which tracks the stock price development on [**Tradegate Exchange**](https://www.tradegate.de).
 
 Following is a summary of the main features:
+
 - [x] Retrieve stock price information
 - [x] Download stock performance images
 - [x] Export stock data to Excel sheet
@@ -13,7 +14,9 @@ Run the script multiple times in order to generate statistics for multiple stock
 ![Price](https://raw.githubusercontent.com/cfanatic/py-stocktrack/master/res/2_price.png)
 
 ## Requirements
-Developed and tested on the following setup: 
+
+Developed and tested on the following setup:
+
 - Python 3.7.2
 - beautifulsoup 4.7.1
 - openpyxl 2.6.0
@@ -25,9 +28,8 @@ Developed and tested on the following setup:
 I recommend to use Visual Studio Code. Make sure that Python is configured correctly.
 
 Run the following command from Command Palette:
-```
-Python: Run Python File in Terminal
-```
+
+`Python: Run Python File in Terminal`
 
 ## Usage
 
