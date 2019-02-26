@@ -107,6 +107,17 @@ class Stock():
             df.to_excel(writer, sheet_name=data_sheet, startrow=0, index=False, header=True)
             worksheet = writer.book[data_sheet]
             worksheet.column_dimensions["A"].width = 17
+            cell_last = "B" + str(worksheet.max_row)
+            cell_low = "C" + str(worksheet.max_row)
+            cell_high = "D" + str(worksheet.max_row)
+            cell_change = "E" + str(worksheet.max_row)
+            cell_mean = "F" + str(worksheet.max_row)
+            worksheet[cell_last].number_format = "#,##0.00€"
+            worksheet[cell_low].number_format = "#,##0.00€"
+            worksheet[cell_high].number_format = "#,##0.00€"
+            worksheet[cell_mean].number_format = "#,##0.00€"
+            worksheet[cell_change].value = float(worksheet[cell_change].value.replace("%", "")) / 100.0
+            worksheet[cell_change].number_format = "0.00%"
             writer.close()
         except ValueError:
             print("Error@saveData: Could not write data to sheet!")
@@ -178,25 +189,25 @@ class Stock():
 
 def main():
     # Open connection to stock exchange database
-    amazon = Stock("US0231351067")
     microsoft = Stock("US5949181045")
     apple = Stock("US0378331005")
     google = Stock("US02079K3059")
+    netflix = Stock("US64110L1061")
     # Retrieve stock performance data
-    pprint(amazon.getData())
     pprint(microsoft.getData())
     pprint(apple.getData())
     pprint(google.getData())
+    pprint(netflix.getData())
     # Download stock performance images
-    amazon.getImage()
     microsoft.getImage()
     apple.getImage()
     google.getImage()
+    netflix.getImage()
     # Save stock performance data
-    amazon.saveData()
     microsoft.saveData()
     apple.saveData()
     google.saveData()
+    netflix.saveData()
     # Delete stock performance images
     Stock.deleteImages()
     # Save stock performance images
