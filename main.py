@@ -19,6 +19,7 @@ class Stock():
     URL_DATA = "https://www.tradegate.de"
     URL_QUERY = URL_DATA + "/orderbuch.php?isin="
     FILE_DATA = "performance.xlsx"
+    FILE_TAB = "Performance"
 
     def __init__(self, id):
         self._id = id
@@ -119,6 +120,8 @@ class Stock():
             worksheet[cell_change].value = float(worksheet[cell_change].value.replace("%", "")) / 100.0
             worksheet[cell_change].number_format = "0.00%"
             writer.close()
+        except FileNotFoundError:
+            print("Error@saveData: Sheet file does not exist!")
         except ValueError:
             print("Error@saveData: Could not write data to sheet!")
         except xlrd.biffh.XLRDError:
@@ -130,7 +133,7 @@ class Stock():
     @staticmethod
     def saveImages():
         data_file = Stock.FILE_DATA
-        data_sheet = "Performance"
+        data_sheet = Stock.FILE_TAB
         data_path = os.path.join(os.getcwd(), "misc")
         data_file = os.path.join(data_path, data_file)
         data_backup = data_file + ".backup"
@@ -160,7 +163,7 @@ class Stock():
                 data_row += 13
             writer.close()
         except FileNotFoundError:
-            print("Error@deleteImages: Sheet file does not exist!")
+            print("Error@saveImage: Sheet file does not exist!")
         except ValueError:
             print("Error@saveImage: Could not write image to sheet!")
             shutil.move(data_backup, data_file)
@@ -173,11 +176,11 @@ class Stock():
 
     @staticmethod
     def deleteImages():
+        data_file = Stock.FILE_DATA
+        data_sheet = Stock.FILE_TAB
+        data_path = os.path.join(os.getcwd(), "misc")
+        data_file = os.path.join(data_path, data_file)
         try:
-            data_file = Stock.FILE_DATA
-            data_sheet = "Performance"
-            data_path = os.path.join(os.getcwd(), "misc")
-            data_file = os.path.join(data_path, data_file)
             workbook = openpyxl.load_workbook(data_file)
             workbook.remove(workbook[data_sheet])
             workbook.save(data_file)
