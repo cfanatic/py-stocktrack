@@ -122,10 +122,16 @@ class Stock():
             writer.close()
         except FileNotFoundError:
             print("Error@saveData: Sheet file does not exist!")
+            if os.path.exists(data_backup):
+                shutil.move(data_backup, data_file)
         except ValueError:
             print("Error@saveData: Could not write data to sheet!")
+            if os.path.exists(data_backup):
+                shutil.move(data_backup, data_file)
         except xlrd.biffh.XLRDError:
             print("Error@saveData: Invalid sheet data format!")
+            if os.path.exists(data_backup):
+                shutil.move(data_backup, data_file)
         else:
             if os.path.exists(data_backup):
                 os.remove(data_backup)
@@ -140,8 +146,8 @@ class Stock():
         data_names = next(os.walk(data_path))[1]
         data_row = 0
         try:
-            writer = pandas.ExcelWriter(data_file, engine="openpyxl")
             shutil.copyfile(data_file, data_backup)
+            writer = pandas.ExcelWriter(data_file, engine="openpyxl")
             workbook = openpyxl.load_workbook(data_file)
             writer.book = workbook
             writer.sheets = dict((ws.title, ws) for ws in workbook.worksheets)
@@ -164,12 +170,16 @@ class Stock():
             writer.close()
         except FileNotFoundError:
             print("Error@saveImage: Sheet file does not exist!")
+            if os.path.exists(data_backup):
+                shutil.move(data_backup, data_file)
         except ValueError:
             print("Error@saveImage: Could not write image to sheet!")
-            shutil.move(data_backup, data_file)
+            if os.path.exists(data_backup):
+                shutil.move(data_backup, data_file)
         except xlrd.biffh.XLRDError:
             print("Error@saveImage: Invalid sheet data format!")
-            shutil.move(data_backup, data_file)
+            if os.path.exists(data_backup):
+                shutil.move(data_backup, data_file)
         else:
             if os.path.exists(data_backup):
                 os.remove(data_backup)
@@ -180,14 +190,23 @@ class Stock():
         data_sheet = Stock.FILE_TAB
         data_path = os.path.join(os.getcwd(), "misc")
         data_file = os.path.join(data_path, data_file)
+        data_backup = data_file + ".backup"
         try:
+            shutil.copyfile(data_file, data_backup)
             workbook = openpyxl.load_workbook(data_file)
             workbook.remove(workbook[data_sheet])
             workbook.save(data_file)
         except FileNotFoundError:
             print("Error@deleteImages: Sheet file does not exist!")
+            if os.path.exists(data_backup):
+                shutil.move(data_backup, data_file)
         except KeyError:
             print("Error@deleteImages: Sheet tab does not exist!")
+            if os.path.exists(data_backup):
+                shutil.move(data_backup, data_file)
+        else:
+            if os.path.exists(data_backup):
+                os.remove(data_backup)
 
 
 def main():
