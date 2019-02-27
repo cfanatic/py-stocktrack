@@ -120,21 +120,18 @@ class Stock():
             worksheet[cell_change].value = float(worksheet[cell_change].value.replace("%", "")) / 100.0
             worksheet[cell_change].number_format = "0.00%"
             writer.close()
-        except FileNotFoundError:
-            print("Error@saveData: Sheet file does not exist!")
-            if os.path.exists(data_backup):
-                shutil.move(data_backup, data_file)
+        except FileNotFoundError as e:
+            print("Error@saveData: File does not exist: " + e.filename)
         except ValueError:
-            print("Error@saveData: Could not write data to sheet!")
-            if os.path.exists(data_backup):
-                shutil.move(data_backup, data_file)
+            print("Error@saveImage: " + e.args[0])
         except xlrd.biffh.XLRDError:
             print("Error@saveData: Invalid sheet data format!")
-            if os.path.exists(data_backup):
-                shutil.move(data_backup, data_file)
         else:
             if os.path.exists(data_backup):
                 os.remove(data_backup)
+        finally:
+            if os.path.exists(data_backup):
+                shutil.move(data_backup, data_file)
 
     @staticmethod
     def saveImages():
@@ -168,21 +165,18 @@ class Stock():
                 caption.font = openpyxl.styles.Font(bold=True)
                 data_row += 13
             writer.close()
-        except FileNotFoundError:
-            print("Error@saveImage: Sheet file does not exist!")
-            if os.path.exists(data_backup):
-                shutil.move(data_backup, data_file)
-        except ValueError:
-            print("Error@saveImage: Could not write image to sheet!")
-            if os.path.exists(data_backup):
-                shutil.move(data_backup, data_file)
+        except FileNotFoundError as e:
+            print("Error@saveImage: File does not exist: " + e.filename)
+        except ValueError as e:
+            print("Error@saveImage: " + e.args[0])
         except xlrd.biffh.XLRDError:
             print("Error@saveImage: Invalid sheet data format!")
-            if os.path.exists(data_backup):
-                shutil.move(data_backup, data_file)
         else:
             if os.path.exists(data_backup):
                 os.remove(data_backup)
+        finally:
+            if os.path.exists(data_backup):
+                shutil.move(data_backup, data_file)
 
     @staticmethod
     def deleteImages():
@@ -196,17 +190,16 @@ class Stock():
             workbook = openpyxl.load_workbook(data_file)
             workbook.remove(workbook[data_sheet])
             workbook.save(data_file)
-        except FileNotFoundError:
-            print("Error@deleteImages: Sheet file does not exist!")
-            if os.path.exists(data_backup):
-                shutil.move(data_backup, data_file)
-        except KeyError:
-            print("Error@deleteImages: Sheet tab does not exist!")
-            if os.path.exists(data_backup):
-                shutil.move(data_backup, data_file)
+        except FileNotFoundError as e:
+            print("Error@deleteImages: File does not exist: " + e.filename)
+        except KeyError as e:
+            print("Error@deleteImages: " + e.args[0])
         else:
             if os.path.exists(data_backup):
                 os.remove(data_backup)
+        finally:
+            if os.path.exists(data_backup):
+                shutil.move(data_backup, data_file)
 
 
 def main():
