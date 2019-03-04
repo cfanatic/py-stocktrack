@@ -1,4 +1,6 @@
+*.py[cod]
 .DS_Store
 .vscode/
 build/
 misc/
+__pycache__/
