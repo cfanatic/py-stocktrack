@@ -127,6 +127,24 @@ class Stock():
             if os.path.exists(data_backup):
                 shutil.move(data_backup, data_file)
 
+    def trackData(self):
+        data_file = Stock.FILE_DATA
+        data_sheet = self.getData("name").split()[0]
+        data_path = os.path.join(os.getcwd(), "misc")
+        data_file = os.path.join(data_path, data_file)
+        try:
+            writer = pandas.ExcelWriter(data_file, engine="openpyxl")
+            workbook = openpyxl.load_workbook(data_file)
+            writer.book = workbook
+            writer.sheets = dict((ws.title, ws) for ws in workbook.worksheets)
+            worksheet = writer.book[data_sheet]
+            date = worksheet[worksheet.max_row][0].value
+            print(date) # debug purposes
+        except FileNotFoundError as e:
+            print("Error@deleteImages: File does not exist: " + e.filename)
+        except KeyError as e:
+            print("Error@deleteImages: " + e.args[0])
+
     @staticmethod
     def saveImages():
         data_file = Stock.FILE_DATA

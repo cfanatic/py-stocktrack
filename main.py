@@ -24,7 +24,7 @@ def save(stocks):
 def track(stocks):
     # Retrieve stock performance data
     for stock in stocks:
-        pprint(stock.getData())
+        stock.trackData()
 
 def main():
     # Open connection to stock exchange database
