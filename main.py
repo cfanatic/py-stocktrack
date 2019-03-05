@@ -38,8 +38,8 @@ def main():
     if len(sys.argv) == 1:
         print("Error@main: Not enough input arguments given!")
     else:
-        opts, args = getopt(sys.argv[1:], "sth", ["save", "track", "help"])
-        for opt, arg in opts:
+        opts, dummy = getopt(sys.argv[1:], "sth", ["save", "track", "help"])
+        for opt, dummy in opts:
             if opt in ("-s", "--save"):
                 save(stocks)
             elif opt in ("-t", "--track"):
