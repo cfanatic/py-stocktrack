@@ -26,21 +26,18 @@ class Stock():
 
     def _fetchData(self):
         stock_data = {}
-        stock_name = self._html.find(
-            "div", {"id": "col1_content"}).find("h2").text
+        stock_name = self._html.find("div", {"id": "col1_content"}).find("h2").text
         stock_data.update({"name": stock_name})
         tag_parent = self._html.find_all("td", class_="longprice")
         for item in tag_parent:
             if "id" in item.attrs:
                 key = item.attrs.get("id")
-                value = item.text.replace(" ", "").replace(
-                    ",", ".").replace("\xa0", "").replace("TEUR", " TEUR")
+                value = item.text.replace(" ", "").replace(",", ".").replace("\xa0", "").replace("TEUR", " TEUR")
                 stock_data.update({key: value})
             else:
                 tag_child = item.find("strong")
                 key = tag_child.attrs.get("id")
-                value = item.text.replace(" ", "").replace(
-                    ",", ".").replace("\xa0", "").replace("TEUR", " TEUR")
+                value = item.text.replace(" ", "").replace(",", ".").replace("\xa0", "").replace("TEUR", " TEUR")
                 stock_data.update({key: value})
         self._data = stock_data
 
@@ -67,15 +64,12 @@ class Stock():
             for key, _value in self._image.items():
                 self.getImage(key)
         else:
-            image_name = self._image[key]["alt"].split(
-                " - ")[-1].replace(" ", "_").lower() + ".png"
+            image_name = self._image[key]["alt"].split(" - ")[-1].replace(" ", "_").lower() + ".png"
             image_url = Stock.URL_DATA + self._image[key]["src"]
-            image_path = os.path.join(
-                os.getcwd(), "misc", self.getData("name").split()[0].lower())
+            image_path = os.path.join(os.getcwd(), "misc", self.getData("name").split()[0].lower())
             if not os.path.exists(image_path):
                 os.makedirs(image_path)
-            urllib.request.urlretrieve(
-                image_url, os.path.join(image_path, image_name))
+            urllib.request.urlretrieve(image_url, os.path.join(image_path, image_name))
 
     def saveData(self):
         data_file = Stock.FILE_DATA
@@ -102,12 +96,10 @@ class Stock():
                 reader.close()
                 workbook = openpyxl.load_workbook(data_file)
                 writer.book = workbook
-                writer.sheets = dict((ws.title, ws)
-                                     for ws in workbook.worksheets)
+                writer.sheets = dict((ws.title, ws) for ws in workbook.worksheets)
             else:
                 workbook = openpyxl.Workbook()
-            df.to_excel(writer, sheet_name=data_sheet,
-                        startrow=0, index=False, header=True)
+            df.to_excel(writer, sheet_name=data_sheet, startrow=0, index=False, header=True)
             worksheet = writer.book[data_sheet]
             worksheet.column_dimensions["A"].width = 17
             cell_last = "B" + str(worksheet.max_row)
@@ -119,8 +111,7 @@ class Stock():
             worksheet[cell_low].number_format = "#,##0.00€"
             worksheet[cell_high].number_format = "#,##0.00€"
             worksheet[cell_mean].number_format = "#,##0.00€"
-            worksheet[cell_change].value = float(
-                worksheet[cell_change].value.replace("%", "")) / 100.0
+            worksheet[cell_change].value = float(worksheet[cell_change].value.replace("%", "")) / 100.0
             worksheet[cell_change].number_format = "0.00%"
             writer.close()
         except FileNotFoundError as e:
@@ -154,19 +145,15 @@ class Stock():
             for data_name in data_names:
                 data_column = 0
                 df = pandas.DataFrame({"name": [data_name.capitalize()]})
-                df.to_excel(writer, sheet_name=data_sheet,
-                            startrow=data_row, startcol=0, index=False, header=False)
+                df.to_excel(writer, sheet_name=data_sheet, startrow=data_row, startcol=0, index=False, header=False)
                 for image_file in ["intraday.png", "1_woche.png", "1_monat.png", "6_monate.png", "1_jahr.png"]:
-                    img = openpyxl.drawing.image.Image(
-                        os.path.join(data_path, data_name, image_file))
-                    img.anchor = openpyxl.utils.get_column_letter(
-                        data_column + 1) + str(data_row + 2)
+                    img = openpyxl.drawing.image.Image(os.path.join(data_path, data_name, image_file))
+                    img.anchor = openpyxl.utils.get_column_letter(data_column + 1) + str(data_row + 2)
                     data_column += 6
                     workbook[data_sheet].add_image(img)
                     workbook.save(data_file)
                 for caption in [(3, "Intraday"), (9, "Week"), (15, "Month"), (21, "Month-6"), (27, "Year")]:
-                    cell = openpyxl.utils.get_column_letter(
-                        caption[0]) + str(data_row + 1)
+                    cell = openpyxl.utils.get_column_letter(caption[0]) + str(data_row + 1)
                     workbook[data_sheet][cell] = caption[1]
                 caption = workbook[data_sheet]["A" + str(data_row + 1)]
                 caption.font = openpyxl.styles.Font(bold=True)
